@@ -2773,6 +2773,7 @@ if (typeof Slick === "undefined") {
       "updateRowCount": updateRowCount,
       "scrollRowIntoView": scrollRowIntoView,
       "getCanvasNode": getCanvasNode,
+      "getCanvasWidth": getCanvasWidth,
       "focus": setFocus,
 
       "getCellFromPoint": getCellFromPoint,

@@ -349,6 +349,10 @@ if (typeof Slick === "undefined") {
       }
       return options.fullWidthRows ? Math.max(rowWidth, availableWidth) : rowWidth;
     }
+    
+    function getViewPortWidth() {
+        return viewportHasVScroll ? viewportW - scrollbarDimensions.width : viewportW;
+    }
 
     function updateCanvasWidth(forceColumnWidthsUpdate) {
       var oldCanvasWidth = canvasWidth;
@@ -2768,6 +2772,7 @@ if (typeof Slick === "undefined") {
       "updateCell": updateCell,
       "updateRow": updateRow,
       "getViewport": getVisibleRange,
+      "getViewPortWidth" : getViewPortWidth,
       "getRenderedRange": getRenderedRange,
       "resizeCanvas": resizeCanvas,
       "updateRowCount": updateRowCount,

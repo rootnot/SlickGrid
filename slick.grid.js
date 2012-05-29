@@ -1550,6 +1550,7 @@ if (typeof Slick === "undefined") {
       // remove rows no longer in the viewport
       cleanupRows(rendered);
 
+      trigger(self.onRenderStart, rendered);
       // add new rows
       renderRows(rendered);
 
@@ -1559,6 +1560,7 @@ if (typeof Slick === "undefined") {
 
       lastRenderedScrollTop = scrollTop;
       h_render = null;
+      trigger(self.onRenderFinish, {});
     }
 
     function handleScroll() {
@@ -2741,6 +2743,8 @@ if (typeof Slick === "undefined") {
       "onDragEnd": new Slick.Event(),
       "onSelectedRowsChanged": new Slick.Event(),
       "onCellCssStylesChanged": new Slick.Event(),
+      "onRenderStart": new Slick.Event(),
+      "onRenderFinish": new Slick.Event(),
 
       // Methods
       "registerPlugin": registerPlugin,

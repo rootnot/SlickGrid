@@ -210,13 +210,13 @@ if (typeof Slick === "undefined") {
       $focusSink = $("<div tabIndex='0' hideFocus style='position:fixed;width:0;height:0;top:0;left:0;outline:0;'></div>").appendTo($container);
 
       $headerScroller = $("<div class='slick-header ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
-      $headers = $("<div class='slick-header-columns' style='width:10000px; left:-1000px' />").appendTo($headerScroller);
+      $headers = $("<div class='slick-header-columns' style='width:12000px; left:-1000px' />").appendTo($headerScroller);
 
       $headerRowScroller = $("<div class='slick-headerrow ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
       $headerRow = $("<div class='slick-headerrow-columns' />").appendTo($headerRowScroller);
 
       $topPanelScroller = $("<div class='slick-top-panel-scroller ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
-      $topPanel = $("<div class='slick-top-panel' style='width:10000px' />").appendTo($topPanelScroller);
+      $topPanel = $("<div class='slick-top-panel' style='width:12000px' />").appendTo($topPanelScroller);
 
       if (!options.showTopPanel) {
         $topPanelScroller.hide();
@@ -479,7 +479,7 @@ if (typeof Slick === "undefined") {
 
       if (options.showHeaderRow) {
         // add a spacer to let the container scroll beyond the header row columns width
-        $("<div style='display:block;height:1px;width:10000px;position:absolute;top:0;left:0;'></div>")
+        $("<div style='display:block;height:1px;width:12000px;position:absolute;top:0;left:0;'></div>")
             .appendTo($headerRowScroller);
       }
 

@@ -70,6 +70,7 @@ if (typeof Slick === "undefined") {
       enableAsyncPostRender: false,
       asyncPostRenderDelay: 60,
       autoHeight: false,
+      hideVScrollBar: false,
       editorLock: Slick.GlobalEditorLock,
       showHeaderRow: false,
       headerRowHeight: 25,
@@ -226,8 +227,8 @@ if (typeof Slick === "undefined") {
         $headerRowScroller.hide();
       }
 
-      $viewport = $("<div class='slick-viewport' style='width:100%;overflow:auto;outline:0;position:relative;;'>").appendTo($container);
-      $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
+      $viewport = $("<div class='slick-viewport' style='width:100%;overflow:auto;outline:0;position:relative;'>").appendTo($container);
+      $viewport.css("overflow-y", options.autoHeight || options.hideVScrollBar ? "hidden" : "auto");
 
       $canvas = $("<div class='grid-canvas' />").appendTo($viewport);
 
@@ -328,6 +329,10 @@ if (typeof Slick === "undefined") {
 
     function getCanvasNode() {
       return $canvas[0];
+    }
+    
+    function getViewPortNode() {
+        return $viewport[0];
     }
 
     function measureScrollbar() {
@@ -1093,7 +1098,7 @@ if (typeof Slick === "undefined") {
 
       options = $.extend(options, args);
 
-      $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
+      $viewport.css("overflow-y", options.autoHeight || options.hideVScrollBar ? "hidden" : "auto");
       render();
     }
 
@@ -1395,7 +1400,7 @@ if (typeof Slick === "undefined") {
 
       var oldViewportHasVScroll = viewportHasVScroll;
       // with autoHeight, we do not need to accommodate the vertical scroll bar
-      viewportHasVScroll = !options.autoHeight && (numberOfRows * options.rowHeight > viewportH);
+      viewportHasVScroll = !options.autoHeight && !options.hideVScrollBar && (numberOfRows * options.rowHeight > viewportH);
 
       // remove the rows that are now outside of the data range
       // this helps avoid redundant calls to .removeRow() when the size of the data decreased by thousands of rows
@@ -1424,6 +1429,7 @@ if (typeof Slick === "undefined") {
       if (h !== oldH) {
         $canvas.css("height", h);
         scrollTop = $viewport[0].scrollTop;
+        trigger(self.onCanvasHeightChange, {oldValue:oldH, newValue:h});
       }
 
       var oldScrollTopInRange = (scrollTop + offset <= th - viewportH);
@@ -2745,6 +2751,7 @@ if (typeof Slick === "undefined") {
       "onCellCssStylesChanged": new Slick.Event(),
       "onRenderStart": new Slick.Event(),
       "onRenderFinish": new Slick.Event(),
+      "onCanvasHeightChange": new Slick.Event(),
 
       // Methods
       "registerPlugin": registerPlugin,
@@ -2777,10 +2784,12 @@ if (typeof Slick === "undefined") {
       "updateRow": updateRow,
       "getViewport": getVisibleRange,
       "getViewPortWidth" : getViewPortWidth,
+      "getViewPortNode" : getViewPortNode,
       "getRenderedRange": getRenderedRange,
       "resizeCanvas": resizeCanvas,
       "updateRowCount": updateRowCount,
       "scrollRowIntoView": scrollRowIntoView,
+      "scrollTo": scrollTo,
       "getCanvasNode": getCanvasNode,
       "getCanvasWidth": getCanvasWidth,
       "focus": setFocus,

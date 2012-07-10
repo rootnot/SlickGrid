@@ -443,56 +443,98 @@ if (typeof Slick === "undefined") {
       return $header && $header[0];
     }
 
-    function createColumnHeaders() {
-      function hoverBegin() {
-        $(this).addClass("ui-state-hover");
-      }
-
-      function hoverEnd() {
-        $(this).removeClass("ui-state-hover");
-      }
-
-      $headers.empty();
-      $headerRow.empty();
-      columnsById = {};
-
-      for (var i = 0; i < columns.length; i++) {
-        var m = columns[i] = $.extend({}, columnDefaults, columns[i]);
-        columnsById[m.id] = i;
-
-        var header = $("<div class='ui-state-default slick-header-column' id='" + uid + m.id + "' />")
-            .html("<span class='slick-column-name'>" + m.name + "</span>")
-            .width(m.width - headerColumnWidthDiff)
-            .attr("title", m.toolTip || m.name || "")
-            .data("fieldId", m.id)
-            .addClass(m.headerCssClass || "")
-            .appendTo($headers);
-
-        if (options.enableColumnReorder || m.sortable) {
-          header.hover(hoverBegin, hoverEnd);
+function createColumnHeaders() {
+        function hoverBegin() {
+            $(this).addClass("ui-state-hover");
         }
 
-        if (m.sortable) {
-          header.append("<span class='slick-sort-indicator' />");
+        function hoverEnd() {
+            $(this).removeClass("ui-state-hover");
         }
+
+        $headers.empty();
+        $headerRow.empty();
+        columnsById = {};
+
+        // empty
+        var columnGroup = {
+            "id"		: "",
+            "name"		: "",
+            // "width"		: 0,
+            "header"	: null
+        };
+
+        for (var i = 0; i < columns.length; i++) {
+            var m = columns[i] = $.extend({}, columnDefaults, columns[i]);
+
+            var header = $("<div class='ui-state-default slick-header-column' id='" + uid + m.id + "' />")
+                .html("<span class='slick-column-name'>" + m.name + "</span>")
+                .width(m.width - headerColumnWidthDiff)
+                .attr("title", m.toolTip || m.name || "")
+                .data("fieldId", m.id)
+                .addClass(m.headerCssClass || "");
+                // .appendTo($headers);
+
+            if (options.enableColumnReorder || m.sortable) {
+                header.hover(hoverBegin, hoverEnd);
+            }
+
+            if (m.sortable) {
+                header.append("<span class='slick-sort-indicator' />");
+            }
+
+            // for grouped column
+            if (m.metadata.group && m.metadata.group_id) {
+                // we have a new group
+                if (columnGroup.id !== m.metadata.group_id) {
+                    // append existing group to headers
+                    if (columnGroup.header) {
+                        // columnGroup.header.width(columnGroup.width);
+                        columnGroup.header.appendTo($headers);
+                    }
+
+                    // reset all group values
+                    // columnGroup.header	= 	$("<div class='ui-state-default slick-header-column' id='" + uid + m.metadata.group_id + "-group' />")
+                    columnGroup.header  =   $("<div class='slick-header-group' id='" + uid + m.metadata.group_id + "-group' />")
+                                            .attr("title", m.metadata.group);
+                    columnGroup.id      =   m.metadata.group_id;
+                    columnGroup.name    =   m.metadata.group;
+                    // columnGroup.width   =   (m.width - headerColumnWidthDiff);
+                }
+                // we have the same group
+                else {
+                    // add headers to to grouped header
+                    header.appendTo(columnGroup.header);
+                    // grouped header's width is a sum of all column headers inside
+                    // columnGroup.width	+= (m.width - headerColumnWidthDiff);
+                }
+            }
+            else {
+                header.appendTo($headers);
+            }
+
+            columnsById[m.id] = i;
+
+            if (options.showHeaderRow) {
+                $("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>")
+                .appendTo($headerRow);
+            }
+        }
+        
+        // add the last columnGroup
+        columnGroup.header.appendTo($headers);
 
         if (options.showHeaderRow) {
-          $("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>")
-              .appendTo($headerRow);
-        }
-      }
-
-      if (options.showHeaderRow) {
-        // add a spacer to let the container scroll beyond the header row columns width
-        $("<div style='display:block;height:1px;width:12000px;position:absolute;top:0;left:0;'></div>")
+            // add a spacer to let the container scroll beyond the header row columns width
+            $("<div style='display:block;height:1px;width:12000px;position:absolute;top:0;left:0;'></div>")
             .appendTo($headerRowScroller);
-      }
+        }
 
-      setSortColumns(sortColumns);
-      setupColumnResize();
-      if (options.enableColumnReorder) {
-        setupColumnReorder();
-      }
+        setSortColumns(sortColumns);
+        setupColumnResize();
+        if (options.enableColumnReorder) {
+            setupColumnReorder();
+        }
     }
 
     function setupColumnSort() {

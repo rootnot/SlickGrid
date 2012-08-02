@@ -139,7 +139,7 @@
         handler: handler
       });
       event.subscribe(handler);
-      
+
       return this;  // allow chaining
     };
 
@@ -153,7 +153,7 @@
           return;
         }
       }
-      
+
       return this;  // allow chaining
     };
 
@@ -163,7 +163,7 @@
         handlers[i].event.unsubscribe(handlers[i].handler);
       }
       handlers = [];
-      
+
       return this;  // allow chaining
     }
   }

@@ -1246,7 +1246,11 @@ if (typeof Slick === "undefined") {
         return columnMetadata[cell].editor;
       }
 
-      return column.editor || (options.editorFactory && options.editorFactory.getEditor(column));
+		// console.warn("COLUMN IN GRID", column);
+		// console.info("CUSTOM:", options.editorFactory.getEditor(column, row, cell));
+      return (column.editor instanceof Function 
+			  ? column.editor 
+			  : (options.editorFactory && options.editorFactory.getEditor(column, row, cell)));
     }
 
     function getDataItemValueForColumn(item, columnDef) {

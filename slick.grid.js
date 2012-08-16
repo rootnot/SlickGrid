@@ -2158,7 +2158,7 @@ if (typeof Slick === "undefined") {
       getEditorLock().deactivate(editController);
     }
 
-    function makeActiveCellEditable(editor) {
+    function makeActiveCellEditable(editor, force) {
       if (!activeCellNode) {
         return;
       }
@@ -2169,7 +2169,7 @@ if (typeof Slick === "undefined") {
       // cancel pending async call if there is one
       clearTimeout(h_editorLoader);
 
-      if (!isCellPotentiallyEditable(activeRow, activeCell)) {
+      if (!force && !isCellPotentiallyEditable(activeRow, activeCell)) {
         return;
       }
 
@@ -2185,7 +2185,7 @@ if (typeof Slick === "undefined") {
       $(activeCellNode).addClass("editable");
 
       // don't clear the cell if a custom editor is passed through
-      if (!editor) {
+      if (force || !editor) {
         activeCellNode.innerHTML = "";
       }
 

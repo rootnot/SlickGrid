@@ -168,6 +168,9 @@ if (typeof Slick === "undefined") {
     // perf counters
     var counter_rows_rendered = 0;
     var counter_rows_removed = 0;
+    
+    // async render lock
+    var renderLock;
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1781,6 +1784,7 @@ if (typeof Slick === "undefined") {
       
       var visible = getVisibleRange();
       var rendered = getRenderedRange();
+      var currentScrollTop = scrollTop;
 
       // remove rows no longer in the viewport
       cleanupRows(rendered);
@@ -1792,7 +1796,7 @@ if (typeof Slick === "undefined") {
           postProcessToRow = Math.min(options.enableAddRow ? getDataLength() : getDataLength() - 1, visible.bottom);
           startPostProcessing();
     
-          lastRenderedScrollTop = scrollTop;
+          lastRenderedScrollTop = currentScrollTop;
           h_render = null;
           trigger(self.onRenderFinish, {});
           renderLock = false;

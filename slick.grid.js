@@ -171,6 +171,7 @@ if (typeof Slick === "undefined") {
     
     // async render lock
     var renderLock;
+    var rowsToRemove = {};
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1205,7 +1206,7 @@ if (typeof Slick === "undefined") {
 
       if (offset != oldOffset) {
         var range = getVisibleRange(newScrollTop);
-        cleanupRows(range.top, range.bottom);
+        cleanupRows(range);
         updateRowPositions();
       }
 
@@ -1272,10 +1273,12 @@ if (typeof Slick === "undefined") {
 
       var requestedCellCount = 0;
       var preRenderedCells = 0;
-      var contentArray = new Array(cellCount);
+      var contentArray = new Array(columns.length);
+      var requestedCells = [];
       var stringArray = [];
       
       var metadata = data.getItemMetadata && data.getItemMetadata(row);
+      var colspan, m;
 
       if (metadata && metadata.cssClasses) {
         rowCss += " " + metadata.cssClasses;
@@ -1303,7 +1306,7 @@ if (typeof Slick === "undefined") {
             stringArray.push("<div class='" + cellCss + "'>");
     
             // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
-            if (d) {
+            if (contentArray[i]) {
               stringArray.push(contentArray[i]);
             }
     
@@ -1316,40 +1319,61 @@ if (typeof Slick === "undefined") {
     
           stringArray.push("</div>");
           
-          callback(null, stringArray);
+          callback(stringArray);
       }
           
-      function addCellContent(err, cell, content) {
+      function addCellContent(cell, content, syncCall) {
+          // console.log('addCellContent', cell, content);
           contentArray[cell] = content;
           if (++preRenderedCells === requestedCellCount) {
-              renderRowStringArray();
+              if (!syncCall) {
+                    renderRowStringArray();
+              } else {
+                  setTimeout(renderRowStringArray, 0);
+              }
           }
       }
-
+      
+      function renderEmpty() {
+          setTimeout(renderRowStringArray, 0);
+      }
+      
+      if (!d) {
+          renderEmpty();
+          return;
+      }
+      
       for (var i = 0, cols = columns.length; i < cols; i++) {
-          
           colspan = getColspan(row, i);
-          
-          if (d) {
-              
-              requestedCellCount ++;
-              
-              var value = getDataItemValueForColumn(d, m);
-              
-              (
-                  function(cell) {
-                        getFormatter(row, m)(row, cell, value, m, d, function(err, content) {
-                            addCellContent(err, cell, content);
-                        });
-                  }
-                  
-              ) (i);
-              
-          }
-          
+          requestedCells.push(i);
+          requestedCellCount ++;
           if (colspan) {
               i += (colspan - 1);
           }
+      }
+      
+      if (!requestedCellCount) {
+          renderEmpty();
+          return;
+      }
+
+      for (var i = 0, cols = requestedCells.length; i < cols; i++) {
+          
+          m = columns[requestedCells[i]];
+          
+          var value = getDataItemValueForColumn(d, m);
+          
+          (
+              function(cell) {
+                    var cellContent = getFormatter(row, m)(row, cell, value, m, d, function(content) {
+                        addCellContent(cell, content);
+                    });
+                    if (cellContent !== undefined) {
+                        addCellContent(cell, cellContent, true);
+                    }
+              }
+              
+          ) (requestedCells[i]);
           
       }
       
@@ -1428,11 +1452,18 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function removeRowFromCache(row) {
+    function removeRowFromCache(row, force) {
       var cacheEntry = rowsCache[row];
       if (!cacheEntry) {
         return;
       }
+      
+      // only mark rows for future removal when in async rendering mode
+      if (options.enableAsyncRender && !(force === true)) {
+          rowsToRemove[row] = true;
+          return;
+      }
+      
       $canvas[0].removeChild(cacheEntry.rowNode);
       delete rowsCache[row];
       delete postProcessedRows[row];
@@ -1458,6 +1489,17 @@ if (typeof Slick === "undefined") {
 
     function invalidateRow(row) {
       invalidateRows([row]);
+    }
+    
+    // remove all rows market for invalidation
+    // forcing removeRowFromCache
+    function removeMarkedRows() {
+        for (var row in rowsToRemove) {
+            if (rowsToRemove.hasOwnProperty(row)) {
+                removeRowFromCache(row, true);
+                delete rowsToRemove[row];
+            }
+        }
     }
 
     function updateCell(row, cell) {
@@ -1649,14 +1691,21 @@ if (typeof Slick === "undefined") {
           
       function finishRender() {
           
-          var stringArray = new Array(_renderedRows);
+          var stringArray = [];
           
-          rows.forEach(function(r) {
-              stringArray[r.row] = r.content;
+          rows.sort(function(a,b) {
+              return a.row < b.row ? -1 : a.row > b.row ? 1 : 0;
+          }).forEach(function(r) {
+              // r.content.unshift(0);
+              // r.content.unshift(stringArray.length);
+              // Array.prototype.splice.apply(stringArray, r.content);
+              stringArray = stringArray.concat(r.content);
           });
           
           var x = document.createElement("div");
           x.innerHTML = stringArray.join("");
+
+          removeMarkedRows();
     
           for (var i = 0, ii = x.childNodes.length; i < ii; i++) {
             renderedRows++;
@@ -1676,7 +1725,7 @@ if (typeof Slick === "undefined") {
           
       }
 
-      function collectRenderedRow(err, row, content) {
+      function collectRenderedRow(row, content) {
           rows.push({
               row       : row,
               content   : content
@@ -1688,14 +1737,14 @@ if (typeof Slick === "undefined") {
       }
       
       for (var i = range.top; i <= range.bottom; i++) {
-          if (rowsCache[i]) {
+          if (!rowsToRemove[i] && rowsCache[i]) {
               continue;
           }
           rowsToRender++;
           (
               function(row) {
-                  appendRowHtmlAsync(row, function(err, rowContent) {
-                      collectRenderedRow(err, row, rowContent);
+                  appendRowHtmlAsync(row, function(rowContent) {
+                      collectRenderedRow(row, rowContent);
                   });
               }
               
@@ -1707,9 +1756,9 @@ if (typeof Slick === "undefined") {
       }
       
       if (!rowsToRender) {
-          setTimeout(0, function() {
-              callback(null);
-          })
+          setTimeout(function() {
+              callback();
+          }, 0);
       }
       
     }
@@ -1773,18 +1822,22 @@ if (typeof Slick === "undefined") {
     }
     
     function renderAsync() {
-      if (!initialized) { return; }
       
       if (renderLock) {
-          onAfterRender = renderAsync;
+          onAfterRender = function() {
+              if (h_render) {
+                  clearTimeout(h_render);
+              }
+              h_render = setTimeout(render, 50);
+          }
           return;
       }
       
       renderLock = true;
-      
+      h_render = null;
       var visible = getVisibleRange();
       var rendered = getRenderedRange();
-      var currentScrollTop = scrollTop;
+      lastRenderedScrollTop = scrollTop;
 
       // remove rows no longer in the viewport
       cleanupRows(rendered);
@@ -1792,22 +1845,22 @@ if (typeof Slick === "undefined") {
       trigger(self.onRenderStart, rendered);
       // add new rows
       renderRowsAsync(rendered, function() {
+          trigger(self.onRenderFinish, {});
           postProcessFromRow = visible.top;
           postProcessToRow = Math.min(options.enableAddRow ? getDataLength() : getDataLength() - 1, visible.bottom);
           startPostProcessing();
     
-          lastRenderedScrollTop = currentScrollTop;
-          h_render = null;
-          trigger(self.onRenderFinish, {});
           renderLock = false;
-          if (onAfterRender instanceof Function) {
-              onAfterRender();
+          var f = onAfterRender;
+          onAfterRender = null;
+          if (f) {
+              f();
           }
       });
     }
 
     function renderSync() {
-      if (!initialized) { return; }
+      h_render = null;
       var visible = getVisibleRange();
       var rendered = getRenderedRange();
 
@@ -1823,11 +1876,11 @@ if (typeof Slick === "undefined") {
       startPostProcessing();
 
       lastRenderedScrollTop = scrollTop;
-      h_render = null;
       trigger(self.onRenderFinish, {});
     }
     
     function render() {
+        if (!initialized) { return; }
         if (options.enableAsyncRender) {
             renderAsync();
         } else {

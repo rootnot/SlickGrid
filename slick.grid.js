@@ -1757,6 +1757,7 @@ if (typeof Slick === "undefined") {
       
       if (!rowsToRender) {
           setTimeout(function() {
+              removeMarkedRows();
               callback();
           }, 0);
       }

@@ -1517,7 +1517,7 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function updateRow(row) {
+    function updateRowSync(row) {
       var cacheEntry = rowsCache[row];
       if (!cacheEntry) {
         return;
@@ -1541,6 +1541,72 @@ if (typeof Slick === "undefined") {
       }
 
       invalidatePostProcessingResults(row);
+    }
+    
+    function updateRowAsync(row) {
+      var cacheEntry = rowsCache[row];
+      if (!cacheEntry) {
+        return;
+      }
+
+      ensureCellNodesInRowsCache(row);
+      
+      var countNodesToUpdate = cacheEntry.cellNodesByColumnIdx.length;
+
+      function updateRenderedCell(node, content) {
+          if (node) {
+              node.innerHTML = content;
+          }
+          countNodesToUpdate--;
+          if (countNodesToUpdate <= 0) {
+              trigger(self.onAfterUpdateRow, {rowNode : cacheEntry.rowNode});
+              invalidatePostProcessingResults(row);
+          }
+      }
+      
+      trigger(self.onBeforeUpdateRow, {rowNode : cacheEntry.rowNode});
+      
+      for (var columnIdx in cacheEntry.cellNodesByColumnIdx) {
+        columnIdx = columnIdx | 0;
+        var m = columns[columnIdx],
+            d = getDataItem(row),
+            node = cacheEntry.cellNodesByColumnIdx[columnIdx];
+
+        // preserve node value from current iteration in a function closure
+        (function(node) {
+
+            if (row === activeRow && columnIdx === activeCell && currentEditor) {
+              currentEditor.loadValue(d);
+              setTimeout(function() {
+                  updateRenderedCell(null);
+              }, 0);
+            } else if (d) {
+              var content = getFormatter(row, m)(row, columnIdx, getDataItemValueForColumn(d, m), m, d, function(content) {
+                  updateRenderedCell(node, content);
+              });
+              if (typeof(content) !== 'undefined') {
+                  setTimeout(function() {
+                      updateRenderedCell(node, content);
+                  }, 0);
+              }
+            } else {
+              setTimeout(function() {
+                  updateRenderedCell(node, "");
+              }, 0);
+            }
+        
+        }(node));
+        
+      }
+    }
+        
+
+    function updateRow(row) {
+        if (options.enableAsyncRender) {
+            updateRowAsync(row);
+        } else {
+            updateRowSync(row);
+        }
     }
 
     function getViewportHeight() {
@@ -1696,9 +1762,6 @@ if (typeof Slick === "undefined") {
           rows.sort(function(a,b) {
               return a.row < b.row ? -1 : a.row > b.row ? 1 : 0;
           }).forEach(function(r) {
-              // r.content.unshift(0);
-              // r.content.unshift(stringArray.length);
-              // Array.prototype.splice.apply(stringArray, r.content);
               stringArray = stringArray.concat(r.content);
           });
           
@@ -3091,6 +3154,8 @@ if (typeof Slick === "undefined") {
       "onCellCssStylesChanged": new Slick.Event(),
       "onRenderStart": new Slick.Event(),
       "onRenderFinish": new Slick.Event(),
+      "onBeforeUpdateRow": new Slick.Event(),
+      "onAfterUpdateRow" : new Slick.Event(),
       "onCanvasHeightChange": new Slick.Event(),
 
       // Methods

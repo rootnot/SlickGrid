@@ -173,6 +173,8 @@ if (typeof Slick === "undefined") {
     var renderLock;
     var rowsToRemove = {};
 
+    // bottom space
+    var bottomPadd = 0;
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Initialization
@@ -1195,8 +1197,9 @@ if (typeof Slick === "undefined") {
     // Rendering / Scrolling
 
     function scrollTo(y) {
+      
       y = Math.max(y, 0);
-      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0));
+      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0) + bottomPadd);
 
       var oldOffset = offset;
 
@@ -1613,7 +1616,8 @@ if (typeof Slick === "undefined") {
       return parseFloat($.css($container[0], "height", true)) -
           parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
-          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
+          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
+          bottomPadd;
     }
 
     function resizeCanvas() {
@@ -3091,7 +3095,11 @@ if (typeof Slick === "undefined") {
       selectionModel.setSelectedRanges(rowsToRanges(rows));
     }
 
-
+    function bottomPadding(height) {
+        bottomPadd = height;
+        resizeCanvas();
+    }
+    
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Debug
 
@@ -3239,7 +3247,9 @@ if (typeof Slick === "undefined") {
 
       // IEditor implementation
       "getEditorLock": getEditorLock,
-      "getEditController": getEditController
+      "getEditController": getEditController,
+      
+      "bottomPadding": bottomPadding
     });
 
     init();

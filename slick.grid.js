@@ -2234,7 +2234,7 @@ if (typeof Slick === "undefined") {
 
       if ((activeCell != cell.cell || activeRow != cell.row) && canCellBeActive(cell.row, cell.cell)) {
         if (!getEditorLock().isActive() || getEditorLock().commitCurrentEdit()) {
-          scrollRowIntoView(cell.row, false);
+          //scrollRowIntoView(cell.row, false);
           setActiveCellInternal(getCellNode(cell.row, cell.cell), (cell.row === getDataLength()) || options.autoEdit);
         }
       }
@@ -2384,7 +2384,7 @@ if (typeof Slick === "undefined") {
     }
 
     function scrollActiveCellIntoView() {
-      if (activeCellNode) {
+      /*if (activeCellNode) {
         var left = $(activeCellNode).position().left,
             right = left + $(activeCellNode).outerWidth(),
             scrollLeft = $viewport.scrollLeft(),
@@ -2395,7 +2395,7 @@ if (typeof Slick === "undefined") {
         } else if (right > scrollRight) {
           $viewport.scrollLeft(Math.min(left, right - $viewport[0].clientWidth));
         }
-      }
+      }*/
     }
 
     function setActiveCellInternal(newCell, editMode) {
@@ -2916,7 +2916,7 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      scrollRowIntoView(row, false);
+      //scrollRowIntoView(row, false);
       setActiveCellInternal(getCellNode(row, cell), false);
     }
 
@@ -2978,7 +2978,7 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      scrollRowIntoView(row, false);
+      //scrollRowIntoView(row, false);
 
       var newCell = getCellNode(row, cell);
 

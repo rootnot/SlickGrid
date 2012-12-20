@@ -1199,7 +1199,7 @@ if (typeof Slick === "undefined") {
     function scrollTo(y) {
       
       y = Math.max(y, 0);
-      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0) + bottomPadd);
+      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0)/* + bottomPadd*/);
 
       var oldOffset = offset;
 
@@ -1326,7 +1326,6 @@ if (typeof Slick === "undefined") {
       }
           
       function addCellContent(cell, content, syncCall) {
-          // console.log('addCellContent', cell, content);
           contentArray[cell] = content;
           if (++preRenderedCells === requestedCellCount) {
               if (!syncCall) {
@@ -1616,8 +1615,7 @@ if (typeof Slick === "undefined") {
       return parseFloat($.css($container[0], "height", true)) -
           parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
-          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
-          bottomPadd;
+          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
     }
 
     function resizeCanvas() {

@@ -811,6 +811,7 @@ if (typeof Slick === "undefined") {
         delta += parseFloat($el.css(val)) || 0;
       });
       */
+      
       var prop, el = $el[0];
           
       for (var i = 0, len = p.length; i < len; i++) {
@@ -1620,20 +1621,19 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportHeight() {
-      return parseFloat($.css($container[0], "height", true)) -
+      /*return parseFloat($.css($container[0], "height", true)) -
+          parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
+          (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
+          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
+      */
+      return (parseFloat($container[0].style.height) || 0) -
           parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
           (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
       
-      /*return (parseFloat($container[0].style.height) || 0) -
-          (parseFloat($headerScroller[0].style.height) || 0) - getVBoxDelta($headerScroller) -
-          (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
-          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
-      */
     }
 
     function resizeCanvas() {
-    
       if (!initialized) { return; }
       if (options.autoHeight) {
         viewportH = options.rowHeight * (getDataLength() + (options.enableAddRow ? 1 : 0) + (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0));
@@ -1642,9 +1642,9 @@ if (typeof Slick === "undefined") {
       }
 
       numVisibleRows = Math.ceil(viewportH / options.rowHeight);
-      //viewportW = parseFloat($.css($container[0], "width", true));
+      viewportW = parseFloat($.css($container[0], "width", true));
       //$viewport.height(viewportH);
-      viewportW = parseFloat($container[0].style.width) || 0;
+      //viewportW = parseFloat($container[0].style.width) || 0;
       $viewport[0].style.height = viewportH + 'px';
 
       if (options.forceFitColumns) {

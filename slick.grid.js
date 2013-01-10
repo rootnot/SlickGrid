@@ -811,11 +811,9 @@ if (typeof Slick === "undefined") {
         delta += parseFloat($el.css(val)) || 0;
       });
       */
-      
-      var prop, el = $el[0];
-          
-      for (var i = 0, len = p.length; i < len; i++) {
-          delta += (parseFloat(el.style[p[i]]) || 0);
+
+      for (var i = 0, l = p.length; i < l; i++) {
+          delta += parseFloat($el[0].style[p[i]]) || 0;
       }
       
       return delta;
@@ -1621,38 +1619,44 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportHeight() {
+        
+        var ch = parseFloat($container[0].style.height) || 0,
+            sh = parseFloat($headerScroller[0].style.height) || 0;
+            
+       return ch - sh -
+          getVBoxDelta($headerScroller) -
+          (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
+          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
+          bottomPadd;
+         
       /*return parseFloat($.css($container[0], "height", true)) -
-          parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
+          parseFloat($.css($headerScroller[0], "height")) -
+          getVBoxDelta($headerScroller) -
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
-          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
+          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
+          bottomPadd;
       */
-      return (parseFloat($container[0].style.height) || 0) -
-          parseFloat($.css($headerScroller[0], "height")) - getVBoxDelta($headerScroller) -
-          (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
-          (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0);
-      
     }
 
-    function resizeCanvas() {
+    function resizeCanvas(scrollTop) {
       if (!initialized) { return; }
       if (options.autoHeight) {
         viewportH = options.rowHeight * (getDataLength() + (options.enableAddRow ? 1 : 0) + (options.leaveSpaceForNewRows ? numVisibleRows - 1 : 0));
       } else {
         viewportH = getViewportHeight();
       }
-
+      
       numVisibleRows = Math.ceil(viewportH / options.rowHeight);
-      viewportW = parseFloat($.css($container[0], "width", true));
-      //$viewport.height(viewportH);
-      //viewportW = parseFloat($container[0].style.width) || 0;
-      $viewport[0].style.height = viewportH + 'px';
+      //viewportW = parseFloat($.css($container[0], "width", true));
+      viewportW = parseFloat($container[0].style.width) || 0;
+      $viewport.height(viewportH);
 
       if (options.forceFitColumns) {
         autosizeColumns();
       }
       
       updateRowCount();
-      handleScroll();
+      //handleScroll(null, scrollTop);
       render();
     }
 
@@ -1905,7 +1909,6 @@ if (typeof Slick === "undefined") {
     }
     
     function renderAsync() {
-      
       if (renderLock) {
           onAfterRender = function() {
               if (h_render) {
@@ -1931,8 +1934,9 @@ if (typeof Slick === "undefined") {
           trigger(self.onRenderFinish, {});
           postProcessFromRow = visible.top;
           postProcessToRow = Math.min(options.enableAddRow ? getDataLength() : getDataLength() - 1, visible.bottom);
+          
           startPostProcessing();
-    
+          
           renderLock = false;
           var f = onAfterRender;
           onAfterRender = null;
@@ -1971,9 +1975,14 @@ if (typeof Slick === "undefined") {
         }
     }
 
-    function handleScroll() {
+    function handleScroll(e, currentScrollTop) {
         
-      scrollTop = $viewport[0].scrollTop;
+      if (typeof(currentScrollTop) != 'undefined') {
+          scrollTop = currentScrollTop;
+      } else {
+          scrollTop = $viewport[0].scrollTop;
+      }
+        
       var scrollLeft = $viewport[0].scrollLeft;
       var scrollDist = Math.abs(scrollTop - prevScrollTop);
       

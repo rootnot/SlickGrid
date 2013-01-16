@@ -394,7 +394,7 @@ if (typeof Slick === "undefined") {
                 if (!options.enableTextSelectionOnCells) {
                     // disable text selection in grid cells except in input and textarea elements
                     // (this is IE-specific, because selectstart event will only fire in IE)
-                    $viewport.bind("selectstart.ui", function(event) {
+                    $viewport.on("selectstart.ui", function(event) {
                         return $(event.target).is("input,textarea");
                     });
                 }
@@ -420,32 +420,36 @@ if (typeof Slick === "undefined") {
                 bindAncestorScrollEvents();
 
                 $container
-                    .bind("resize.slickgrid", resizeCanvas);
+                    .on("resize.slickgrid", resizeCanvas);
                 $viewport
-                    .bind("scroll", handleScroll);
+                    .on("scroll", handleScroll);
                 $headerScroller
-                    .bind("contextmenu", handleHeaderContextMenu)
-                    .bind("click", handleHeaderClick)
-                    .delegate(".slick-header-column", "mouseenter", handleHeaderMouseEnter)
-                    .delegate(".slick-header-column", "mouseleave", handleHeaderMouseLeave);
+                    .on("contextmenu", handleHeaderContextMenu)
+                    .on("click", handleHeaderClick)
+                    /****** HURRA */
+                    //.delegate(".slick-header-column", "mouseenter", handleHeaderMouseEnter)
+                    //.delegate(".slick-header-column", "mouseleave", handleHeaderMouseLeave);
+                    .on("mouseenter", ".slick-header-column", handleHeaderMouseEnter)
+                    .on("mouseleave", ".slick-header-column", handleHeaderMouseLeave);
+                    /**************/
                 $headerRowScroller
-                    .bind("scroll", handleHeaderRowScroll);
+                    .on("scroll", handleHeaderRowScroll);
                 $focusSink.add($focusSink2)
-                    .bind("keydown", handleKeyDown);
+                    .on("keydown", handleKeyDown);
                 $canvas
-                    .bind("keydown", handleKeyDown)
-                    .bind("click", handleClick)
-                    .bind("dblclick", handleDblClick)
-                    .bind("contextmenu", handleContextMenu)
-                    .bind("draginit", handleDragInit)
-                    .bind("dragstart", handleDragStart)
-                    .bind("drag", handleDrag)
-                    .bind("dragend", handleDragEnd)
+                    .on("keydown", handleKeyDown)
+                    .on("click", handleClick)
+                    .on("dblclick", handleDblClick)
+                    .on("contextmenu", handleContextMenu)
+                    .on("draginit", handleDragInit)
+                    .on("dragstart", handleDragStart)
+                    .on("drag", handleDrag)
+                    .on("dragend", handleDragEnd)
                     /****** HURRA */
                     //.delegate(".slick-cell", "mouseenter", handleMouseEnter)
                     //.delegate(".slick-cell", "mouseleave", handleMouseLeave);
-                    .on(".slick-cell", "mouseenter", handleMouseEnter)
-                    .on(".slick-cell", "mouseleave", handleMouseLeave);
+                    .on("mouseenter", ".slick-cell", handleMouseEnter)
+                    .on("mouseleave", ".slick-cell", handleMouseLeave);
                     /*************/
                     
             }
@@ -1223,9 +1227,14 @@ if (typeof Slick === "undefined") {
         function getVBoxDelta($el) {
             var p = ["borderTopWidth", "borderBottomWidth", "paddingTop", "paddingBottom"];
             var delta = 0;
-            $.each(p, function(n, val) {
+            /*$.each(p, function(n, val) {
                 delta += parseFloat($el.css(val)) || 0;
-            });
+            });*/
+            /**** HURRA */
+            for (var i = 0, l = p.length; i < l; i++) {
+                delta += parseFloat($el[0].style[p[i]]) || 0;
+            }
+            /***********/
             return delta;
         }
 
@@ -1284,8 +1293,10 @@ if (typeof Slick === "undefined") {
 
         function setOverflow() {
             $viewportTopL.css({
-                'overflow-x': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'scroll' : ( hasFrozenRows ) ? 'hidden' : 'auto',
-                'overflow-y': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'hidden' : ( hasFrozenRows ) ? 'scroll' : 'auto'
+                //'overflow-x': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'scroll' : ( hasFrozenRows ) ? 'hidden' : 'auto',
+                //'overflow-y': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'hidden' : ( hasFrozenRows ) ? 'scroll' : 'auto'
+                /**** HURRA */
+                'overflow': 'hidden'
             });
 
             $viewportTopR.css({
@@ -1336,6 +1347,10 @@ if (typeof Slick === "undefined") {
             }
         }
 
+        function getViewportScrollContainerY() {
+            return $viewportTopR;
+        }
+        
         function measureCellPaddingAndBorder() {
             var el;
             var h = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"];
@@ -2606,6 +2621,9 @@ if (typeof Slick === "undefined") {
             if (!initialized) {
                 return;
             }
+            
+            console.time('render');
+            
             var visible = getVisibleRange();
             var rendered = getRenderedRange();
 
@@ -2618,7 +2636,7 @@ if (typeof Slick === "undefined") {
             }
 
             /*** HURRA */
-            trigger(self.onRenderStart, rendered);
+            // trigger(self.onRenderStart, rendered);
             /***********/
             
             // render missing rows
@@ -2641,6 +2659,8 @@ if (typeof Slick === "undefined") {
             lastRenderedScrollTop = scrollTop;
             lastRenderedScrollLeft = scrollLeft;
             h_render = null;
+            
+            console.timeEnd('render');
         }
 
         function handleHeaderRowScroll() {
@@ -2729,6 +2749,21 @@ if (typeof Slick === "undefined") {
             });
         }
 
+        function scrollToXY(params) {
+            if (typeof(params) != 'object') { return; }
+            
+            var left = params.left,
+                top = params.top;
+            
+            if (typeof(top) != 'undefined' && top != null) {
+                $viewportScrollContainerY[0].scrollTop = top;
+            }
+            if (typeof(left) != 'undefined' && left != null) {
+                $viewportScrollContainerX[0].scrollLeft = left;
+            }
+            handleScroll();
+        }
+        
         function handleMouseWheel(event, delta, deltaX, deltaY) {
             if (delta > 0) {
                 // Scroll up
@@ -3357,7 +3392,8 @@ if (typeof Slick === "undefined") {
             getEditorLock().deactivate(editController);
         }
 
-        function makeActiveCellEditable(editor) {
+        /* HURRA *****/
+        function makeActiveCellEditable(editor, force ) {
             if (!activeCellNode) {
                 return;
             }
@@ -3367,10 +3403,13 @@ if (typeof Slick === "undefined") {
 
             // cancel pending async call if there is one
             clearTimeout(h_editorLoader);
-
-            if (!isCellPotentiallyEditable(activeRow, activeCell)) {
+            
+            
+            /* HURRA *****/
+            if (!force &&!isCellPotentiallyEditable(activeRow, activeCell)) {
                 return;
             }
+            /*************/
 
             var columnDef = columns[activeCell];
             var item = getDataItem(activeRow);
@@ -4156,6 +4195,7 @@ if (typeof Slick === "undefined") {
             "updateRowCount": updateRowCount,
             "scrollRowIntoView": scrollRowIntoView,
             "scrollRowToTop": scrollRowToTop,
+            "scrollToXY": scrollToXY,
             "scrollCellIntoView": scrollCellIntoView,
             "getCanvasNode": getCanvasNode,
             "getActiveCanvasNode": getActiveCanvasNode,
@@ -4197,6 +4237,10 @@ if (typeof Slick === "undefined") {
             "getCellCssStyles": getCellCssStyles,
             "getFrozenRowOffset": getFrozenRowOffset,
 
+            /**** HURRA ****/
+            "getViewportScrollContainerY": getViewportScrollContainerY,
+            /***************/
+            
             "init": finishInitialization,
             "destroy": destroy,
 

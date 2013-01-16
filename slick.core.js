@@ -134,6 +134,11 @@
     var handlers = [];
 
     this.subscribe = function (event, handler) {
+        
+    if (typeof(event) === 'undefined') {
+        console.log(arguments.callee.caller);
+    }
+        
       handlers.push({
         event: event,
         handler: handler

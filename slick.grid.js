@@ -441,8 +441,13 @@ if (typeof Slick === "undefined") {
                     .bind("dragstart", handleDragStart)
                     .bind("drag", handleDrag)
                     .bind("dragend", handleDragEnd)
-                    .delegate(".slick-cell", "mouseenter", handleMouseEnter)
-                    .delegate(".slick-cell", "mouseleave", handleMouseLeave);
+                    /****** HURRA */
+                    //.delegate(".slick-cell", "mouseenter", handleMouseEnter)
+                    //.delegate(".slick-cell", "mouseleave", handleMouseLeave);
+                    .on(".slick-cell", "mouseenter", handleMouseEnter)
+                    .on(".slick-cell", "mouseleave", handleMouseLeave);
+                    /*************/
+                    
             }
         }
 
@@ -2278,6 +2283,7 @@ if (typeof Slick === "undefined") {
                 }
 
                 scrollTop = $viewportScrollContainerY[0].scrollTop;
+                trigger(self.onCanvasHeightChange, {oldValue:oldH, newValue:h});
             }
 
             var oldScrollTopInRange = (scrollTop + offset <= th - tempViewportH);
@@ -2611,6 +2617,10 @@ if (typeof Slick === "undefined") {
                 cleanUpAndRenderCells(rendered);
             }
 
+            /*** HURRA */
+            trigger(self.onRenderStart, rendered);
+            /***********/
+            
             // render missing rows
             renderRows(rendered);
 
@@ -4105,7 +4115,12 @@ if (typeof Slick === "undefined") {
             "onDragEnd": new Slick.Event(),
             "onSelectedRowsChanged": new Slick.Event(),
             "onCellCssStylesChanged": new Slick.Event(),
-
+            
+            /****** HURRA */
+            "onRenderStart": new Slick.Event(),
+            "onRenderFinish": new Slick.Event(),
+            "onCanvasHeightChange": new Slick.Event(),
+            /**************/
             // Methods
             "registerPlugin": registerPlugin,
             "unregisterPlugin": unregisterPlugin,

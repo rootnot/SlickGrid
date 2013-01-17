@@ -246,6 +246,7 @@ if (typeof Slick === "undefined") {
             scrollbarDimensions = scrollbarDimensions || measureScrollbar();
 
             options = $.extend({}, defaults, options);
+            
             validateAndEnforceOptions();
             columnDefaults.width = options.defaultColumnWidth;
 
@@ -421,8 +422,10 @@ if (typeof Slick === "undefined") {
 
                 $container
                     .on("resize.slickgrid", resizeCanvas);
+                /* HURRA *****/
                 $viewport
                     .on("scroll", handleScroll);
+                /************/
                 $headerScroller
                     .on("contextmenu", handleHeaderContextMenu)
                     .on("click", handleHeaderClick)
@@ -1227,13 +1230,13 @@ if (typeof Slick === "undefined") {
         function getVBoxDelta($el) {
             var p = ["borderTopWidth", "borderBottomWidth", "paddingTop", "paddingBottom"];
             var delta = 0;
-            /*$.each(p, function(n, val) {
+            $.each(p, function(n, val) {
                 delta += parseFloat($el.css(val)) || 0;
-            });*/
+            });
             /**** HURRA */
-            for (var i = 0, l = p.length; i < l; i++) {
-                delta += parseFloat($el[0].style[p[i]]) || 0;
-            }
+            //for (var i = 0, l = p.length; i < l; i++) {
+            //    delta += parseFloat($el[0].style[p[i]]) || 0;
+            //}
             /***********/
             return delta;
         }
@@ -1266,7 +1269,11 @@ if (typeof Slick === "undefined") {
         }
 
         function setPaneVisibility() {
+            console.log('ssss', options.frozenColumn);
             if (options.frozenColumn > -1) {
+                
+                console.log('showR');
+                
                 $paneHeaderR.show();
                 $paneTopR.show();
 
@@ -1293,10 +1300,10 @@ if (typeof Slick === "undefined") {
 
         function setOverflow() {
             $viewportTopL.css({
-                //'overflow-x': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'scroll' : ( hasFrozenRows ) ? 'hidden' : 'auto',
-                //'overflow-y': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'hidden' : ( hasFrozenRows ) ? 'scroll' : 'auto'
+                'overflow-x': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'scroll' : ( hasFrozenRows ) ? 'hidden' : 'auto',
+                'overflow-y': ( options.frozenColumn > -1 ) ? ( hasFrozenRows ) ? 'hidden' : 'hidden' : ( hasFrozenRows ) ? 'scroll' : 'auto'
                 /**** HURRA */
-                'overflow': 'hidden'
+                //'overflow': 'hidden'
             });
 
             $viewportTopR.css({
@@ -2622,8 +2629,6 @@ if (typeof Slick === "undefined") {
                 return;
             }
             
-            console.time('render');
-            
             var visible = getVisibleRange();
             var rendered = getRenderedRange();
 
@@ -2636,7 +2641,7 @@ if (typeof Slick === "undefined") {
             }
 
             /*** HURRA */
-            // trigger(self.onRenderStart, rendered);
+            trigger(self.onRenderStart, rendered);
             /***********/
             
             // render missing rows
@@ -2660,7 +2665,9 @@ if (typeof Slick === "undefined") {
             lastRenderedScrollLeft = scrollLeft;
             h_render = null;
             
-            console.timeEnd('render');
+            /*** HURRA */
+            trigger(self.onRenderFinish, {});
+            /***********/
         }
 
         function handleHeaderRowScroll() {
@@ -2671,6 +2678,7 @@ if (typeof Slick === "undefined") {
         }
 
         function handleScroll() {
+            
             scrollTop = $viewportScrollContainerY[0].scrollTop;
             scrollLeft = $viewportScrollContainerX[0].scrollLeft;
 

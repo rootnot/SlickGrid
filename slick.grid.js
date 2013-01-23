@@ -806,16 +806,14 @@ if (typeof Slick === "undefined") {
     function getVBoxDelta($el) {
       var p = ["borderTopWidth", "borderBottomWidth", "paddingTop", "paddingBottom"];
       var delta = 0;
-      /*
-      $.each(p, function (n, val) {
+      /*$.each(p, function (n, val) {
         delta += parseFloat($el.css(val)) || 0;
-      });
-      */
-
-      for (var i = 0, l = p.length; i < l; i++) {
-          delta += parseFloat($el[0].style[p[i]]) || 0;
-      }
-      
+      });*/
+       /**** HURRA */
+       for (var i = 0, l = p.length; i < l; i++) {
+           delta += parseFloat($el[0].style[p[i]]) || 0;
+       }
+       /***********/
       return delta;
     }
 
@@ -1620,7 +1618,7 @@ if (typeof Slick === "undefined") {
 
     function getViewportHeight() {
         
-        var ch = parseFloat($container[0].style.height) || 0,
+       /* var ch = parseFloat($container[0].style.height) || 0,
             sh = parseFloat($headerScroller[0].style.height) || 0;
             
        return ch - sh -
@@ -1628,14 +1626,13 @@ if (typeof Slick === "undefined") {
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
           (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
           bottomPadd;
-         
-      /*return parseFloat($.css($container[0], "height", true)) -
+        */
+      return parseFloat($.css($container[0], "height", true)) -
           parseFloat($.css($headerScroller[0], "height")) -
           getVBoxDelta($headerScroller) -
           (options.showTopPanel ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0) -
           (options.showHeaderRow ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0) -
           bottomPadd;
-      */
     }
 
     function resizeCanvas(scrollTop) {
@@ -1647,8 +1644,8 @@ if (typeof Slick === "undefined") {
       }
       
       numVisibleRows = Math.ceil(viewportH / options.rowHeight);
-      //viewportW = parseFloat($.css($container[0], "width", true));
-      viewportW = parseFloat($container[0].style.width) || 0;
+      viewportW = parseFloat($.css($container[0], "width", true));
+      //viewportW = parseFloat($container[0].style.width) || 0;
       $viewport.height(viewportH);
 
       if (options.forceFitColumns) {
@@ -2025,6 +2022,21 @@ if (typeof Slick === "undefined") {
       trigger(self.onScroll, {scrollLeft: scrollLeft, scrollTop: scrollTop});
     }
 
+    function scrollToXY(params) {
+        if (typeof(params) != 'object') { return; }
+        
+        var left = params.left,
+            top = params.top;
+        
+        if (typeof(top) != 'undefined' && top != null) {
+            $viewport[0].scrollTop = top;
+        }
+        if (typeof(left) != 'undefined' && left != null) {
+            $viewport[0].scrollLeft = left;
+        }
+        handleScroll();
+    }
+    
     function asyncPostProcessRows() {
       while (postProcessFromRow <= postProcessToRow) {
         var row = (scrollDir >= 0) ? postProcessFromRow++ : postProcessToRow--;
@@ -3225,7 +3237,8 @@ if (typeof Slick === "undefined") {
       "resizeCanvas": resizeCanvas,
       "updateRowCount": updateRowCount,
       "scrollRowIntoView": scrollRowIntoView,
-      "scrollTo": scrollTo,
+      "scrollTo": scrollTo, // deprecated
+      "scrollToXY": scrollToXY,
       "scrollRowToTop": scrollRowToTop,
       "getCanvasNode": getCanvasNode,
       "getCanvasWidth": getCanvasWidth,

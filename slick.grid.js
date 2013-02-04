@@ -1204,7 +1204,7 @@ if (typeof Slick === "undefined") {
     function scrollTo(y) {
       
       y = Math.max(y, 0);
-      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0)/* + bottomPadd*/);
+      y = Math.min(y, th - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0));
 
       var oldOffset = offset;
 
@@ -1584,23 +1584,23 @@ if (typeof Slick === "undefined") {
 
             if (row === activeRow && columnIdx === activeCell && currentEditor) {
               currentEditor.loadValue(d);
-              setTimeout(function() {
+              //setTimeout(function() {
                   updateRenderedCell(null);
-              }, 0);
+              //}, 0);
             } else if (d) {
               var content = getFormatter(row, m)(row, columnIdx, getDataItemValueForColumn(d, m), m, d, function(content) {
                   updateRenderedCell(node, content);
               });
               if (typeof(content) !== 'undefined') {
-                  setTimeout(function() {
+                  //setTimeout(function() {
                       updateRenderedCell(node, content);
-                  }, 0);
+                  //}, 0);
               }
-            } else {
-              setTimeout(function() {
+            }/* else {
+              //setTimeout(function() {
                   updateRenderedCell(node, "");
-              }, 0);
-            }
+              //}, 0);
+            }*/
         
         }(node));
         
@@ -1769,6 +1769,7 @@ if (typeof Slick === "undefined") {
     }
     
     function renderRowsAsync(range, callback) {
+        
       var parentNode = $canvas[0],
           rows = [],
           needToReselectCell = false,
@@ -1972,14 +1973,14 @@ if (typeof Slick === "undefined") {
         }
     }
 
-    function handleScroll(e, currentScrollTop) {
+    function handleScroll(e, _scrollTop) {
         
-      if (typeof(currentScrollTop) != 'undefined') {
-          scrollTop = currentScrollTop;
+      if (_scrollTop) {
+          scrollTop = _scrollTop;
       } else {
           scrollTop = $viewport[0].scrollTop;
       }
-        
+      
       var scrollLeft = $viewport[0].scrollLeft;
       var scrollDist = Math.abs(scrollTop - prevScrollTop);
       
@@ -2010,7 +2011,7 @@ if (typeof Slick === "undefined") {
         }
 
         if (Math.abs(lastRenderedScrollTop - scrollTop) < viewportH) {
-          if (Math.abs(lastRenderedScrollTop - scrollTop) > 20) {
+          if (Math.abs(lastRenderedScrollTop - scrollTop) > 100) {
             render();
           }
         } else {
@@ -2022,21 +2023,6 @@ if (typeof Slick === "undefined") {
       trigger(self.onScroll, {scrollLeft: scrollLeft, scrollTop: scrollTop});
     }
 
-    function scrollToXY(params) {
-        if (typeof(params) != 'object') { return; }
-        
-        var left = params.left,
-            top = params.top;
-        
-        if (typeof(top) != 'undefined' && top != null) {
-            $viewport[0].scrollTop = top;
-        }
-        if (typeof(left) != 'undefined' && left != null) {
-            $viewport[0].scrollLeft = left;
-        }
-        handleScroll();
-    }
-    
     function asyncPostProcessRows() {
       while (postProcessFromRow <= postProcessToRow) {
         var row = (scrollDir >= 0) ? postProcessFromRow++ : postProcessToRow--;
@@ -3238,7 +3224,8 @@ if (typeof Slick === "undefined") {
       "updateRowCount": updateRowCount,
       "scrollRowIntoView": scrollRowIntoView,
       "scrollTo": scrollTo, // deprecated
-      "scrollToXY": scrollToXY,
+      //"scrollToXY": scrollToXY,
+      "handleScroll": handleScroll,
       "scrollRowToTop": scrollRowToTop,
       "getCanvasNode": getCanvasNode,
       "getCanvasWidth": getCanvasWidth,
